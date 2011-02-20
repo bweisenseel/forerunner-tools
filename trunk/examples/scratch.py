@@ -1,4 +1,4 @@
-import tcx_parser 
+import lib.tcx_parser as tcx_parser
 reload(tcx_parser)
 
 src='/home/lorax/src/ant0_t3/results/20110213-2034/13.02.2011 100234.TCX'

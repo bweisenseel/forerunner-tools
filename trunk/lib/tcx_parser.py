@@ -85,11 +85,11 @@ class TCX(object):
             self._tcx=None
 
     def parse_file(self,src=None):
+        from third_party.xml2obj import xml2obj
         if isinstance(src,file):
             srcfile=src
         elif isinstance(src,str):
             srcfile=open(src)
-        from xml2obj import xml2obj
         self._tcx=xml2obj(srcfile)
         srcfile.close()
         return 
