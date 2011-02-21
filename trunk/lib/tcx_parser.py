@@ -1,5 +1,31 @@
 from datetime import datetime 
-from dateutil import parser as dateparser 
+from dateutil import parser as dateparser
+# Web: 
+#    (Outdated: http://proj.maptools.org)
+#    http://trac.osgeo.org/proj/
+# Projection codes:
+#    http://www.remotesensing.org/geotiff/proj_listQ
+import pyproj
+
+# >>> # projection 1: UTM zone 15, grs80 ellipse, NAD83 datum
+# >>> # (defined by epsg code 26915)
+# >>> p1 = pyproj.Proj(init='epsg:26915')
+# >>> # projection 2: UTM zone 15, clrk66 ellipse, NAD27 datum
+# >>> p2 = pyproj.Proj(init='epsg:26715')
+# >>> # find x,y of Jefferson City, MO.
+# >>> x1, y1 = p1(-92.199881,38.56694)
+# >>> # transform this point to projection 2 coordinates.
+# >>> x2, y2 = pyproj.transform(p1,p2,x1,y1)
+
+# >>> # process 3 points at a time in a tuple
+# >>> lats = (38.83,39.32,38.75) # Columbia, KC and StL Missouri
+# >>> lons = (-92.22,-94.72,-90.37)
+# >>> x1, y1 = p1(lons,lats)
+# >>> x2, y2 = pyproj.transform(p1,p2,x1,y1)
+# >>> xy = x1+y1
+# >>> xy = x2+y2
+# >>> lons, lats = p2(x2,y2,inverse=True)
+# >>> xy = lons+lats
 
 class TrackPoint(object):
     def __init__(self,track_point=None):
