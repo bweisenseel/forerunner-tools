@@ -4,24 +4,11 @@ reload(tcx_parser)
 src='/home/lorax/src/ant0_t3/results/20110213-2034/13.02.2011 100234.TCX'
 tcx = tcx_parser.TCX(src=src)
 
-# N_acts=len(tcx.data.Activities)
-# N_act=[len(acts.Activity) for acts in tcx.data.Activities]
-laplist = tcx.data.Activities[0].Activity[0].Lap
-track=[]
-for lap in laplist:
-    if lap.Track:
-        for t in lap.Track:
-            # Keep only trackpoints that have data we are interested in
-            temp=filter(tcx_parser.tp_check,t.Trackpoint)
-            if temp:
-                track.append(temp)
-            
-# len(track)
-# sum(len(t) for t in track)
-# [(i,len(t)) for i,t in enumerate(track)]
-tp_set=[]
-for tp_list in track:
-    tp_set.append([tcx_parser.TrackPoint(tp) for tp in tp_list ])
+# tcx_track=tcx.validated_track
+tcx_track=[t for t in tcx.validated_tracks ]
+# print tcx.num_valid_points
+
+track_points=[tp for tp in tcx.track_points]
 
 import itertools
 import pylab as plt
