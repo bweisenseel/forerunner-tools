@@ -1,11 +1,15 @@
 import lib.tcx_parser as tcx_parser
+import lib.trackpoint as trackpoint
 reload(tcx_parser)
+reload(trackpoint)
 
-src='/home/lorax/src/ant0_t3/results/20110213-2034/13.02.2011 100234.TCX'
+src='/home/lorax/Documents/Garmin-Data/20110213-2034/13.02.2011 100234.TCX'
 tcx = tcx_parser.TCX(src=src)
 
 # tcx_track=tcx.validated_track
-tcx_track=[t for t in tcx.validated_tracks ]
+sum(len(t) for t in tcx.trackpoint_lists)
+sum(len(t) for t in trackpoint.validated_tracks)
+tcx_track=[ t for t in tcx.validated_tracks ]
 # print tcx.num_valid_points
 
 track_points=[tp for tp in tcx.track_points]
