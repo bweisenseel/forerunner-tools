@@ -1,10 +1,8 @@
-from datetime import datetime 
-from dateutil import parser as dateparser
 import itertools
-import pyproj
+#import pyproj
 # from tcx_parser import TCX
 
-# Web: 
+# Web:
 #    (Outdated: http://proj.maptools.org)
 #    http://trac.osgeo.org/proj/
 # Projection codes:
@@ -43,55 +41,81 @@ import pyproj
 # >>> xy = lons+lats
 
 
-def validated_tracks(tcx=None):
-    """Generator providing the trackpoint list for every track that has one"""
-    assert hasattr(tcx,'trackpoint_lists'), "Must have a trackpoint_list iterable"
-    # All tracks that have a trackpoint list
-    for tpl in tcx.trackpoint_lists:
-        tp_list = [tp for tp in itertools.ifilter(tp_check,tpl)]
-        if tp_list:
-            yield tp_list
+
+class HeartTrack(object):
+    @classmethod
+    def is_valid(cls, point):
+        return hasattr(point, 'Time') and hasattr(point, 'HeartRateBpm')
+
+    @classmethod
+    def _extract_time_and_bpm(cls, point):
+        return (parse_time(point), parse_heart_rate(point))
+
+    # Create and maintain it as a time-sorted list
+    def __init__(self, trackpoints):
+        self._heart_rate = sorted(self._extract_time_and_bpm(point) for point in trackpoints if self.is_valid(point))
 
 class Track(object):
-    def __init__(self,tcx=None):
-        self.tracks = [[TrackPoint(tp) for tp in t ] for t in validated_tracks(tcx)]
+    def __init__(self, tcx=None):
+        self.tracks = [sorted(TrackPoint(tp) for tp in t if Trackpoint.is_valid(tp)) for t in validated_tracks(tcx)]
 
 class TrackPoint(object):
-    def __init__(self,track_point=None):
-        if getattr(track_point,"Time",None):
-            self.time=dateparser.parse(getattr(track_point,"Time"))
-        else:
-            self.time=None
-        if (getattr(track_point,"AltitudeMeters",None) and 
-            getattr(track_point,"Position",None) and 
-            getattr(getattr(track_point,"Position"),"LatitudeDegrees",None) and
-            getattr(getattr(track_point,"Position"),"LongitudeDegrees",None)):
-            self.latitude=float(getattr(getattr(track_point,"Position"),"LatitudeDegrees"))
-            self.longitude=float(getattr(getattr(track_point,"Position"),"LongitudeDegrees"))
-            self.altitude=float(getattr(track_point,"AltitudeMeters"))
-        else:
-            self.latitude=None
-            self.longitude=None
-            self.altitude=None
-        if (getattr(track_point,"HeartRateBpm",None) and 
-            getattr(getattr(track_point,"HeartRateBpm"),"Value",None)):
-            self.heart_rate=int(getattr(getattr(track_point,"HeartRateBpm"),"Value"))
-        else:
-            self.heart_rate=None
+    """ """
+    @classmethod
+    def is_valid(cls, point):
+        return hasattr(point, 'Time') and hasattr(point, 'Position') and hasattr(point, 'AltitudeMeters')
+
+    @classmethod
+    def valid_points(cls, points):
+        for p in points:
+            if cls.is_valid(p):
+                yield cls(p)
+
+    def __init__(self, point):
+        self.time = parse_time(point)
+        self.latitude=float(track_point.Position.LatitudeDegrees)
+        self.longitude=float(track_point.Position.LongitudeDegrees)
+        self.altitude=float(track_point.AltitudeMeters)
 
     @property
     def isotime(self):
         if self.time:
             return self.time.isoformat()
-        else:
-            return str(None)
+        return str(None)
+
+    def _key(self):
+        return (self.time, (self.latitude, self.longitude, self.altitude))
+
+    def __hash__(self):
+        return hash(self._key)
+
+    def __eq__(self, other):
+        for attr in ('time', 'latitude', 'longitude', 'altitude'):
+            if getattr(self, attr) != getattr(other, attr):
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __lt__(self, other):
+        return self.time < other.time
+
+    def __le__(self, other):
+        return self.time <= other.time
+
+    def __gt__(self, other):
+        return self.time > other.time
+
+    def __ge__(self, other):
+        return self.time >= other.time
 
     # def utm(self,zone=None):
     #     """Return the UTM coordinates of the point"""
     #     if zone is None:
     #         # Select the zone for this coordinate
     #         p = pyproj.Proj(proj='utm',ellps='WGS84',zone=zone)
-        
+
 
     def __repr__(self):
         pointStr = "Time: " + self.isotime
@@ -101,22 +125,8 @@ class TrackPoint(object):
         pointStr += "\nHR: " + str(self.heart_rate) + " BPM"
         pointStr += "\n"
         return pointStr
-        
-    
+
+
 # tp_keys=set("AltitudeMeters","Position","HeartRateBpm","Time")
 # pos_keys=set("LatitudeDegrees","LongitudeDegrees")
 # hr_keys=set("Value")
-def tp_check(track_point=None):
-    if track_point is None:
-        return False
-    # A track point must have a time
-    if not hasattr(track_point, "Time"):
-        return False
-    # A trackpoint must have either have position in lat, lon, and alt or have a heart rate (it can have both)
-    if not ( (hasattr(track_point, "Position") and hasattr(track_point, "Altitude") and 
-              hasattr(track_point.Position, "LatitudeDegrees") and 
-              hasattr(track_point.Position, "LongitudeDegrees")) or
-             (hasattr(track_point, "HeartRateBpm") and 
-              hasattr(track_point.HeartRateBpm, "Value"))):
-        return False
-    return True
