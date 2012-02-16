@@ -1,7 +1,2 @@
 This project is just a toy effort on my part to create some python tools for processing data from my Garmin ForeRunner 405CX.
 
-Project Plan:
-   - Create classes for:
-         - time sequences of objects
-         - position objects
-         - 
