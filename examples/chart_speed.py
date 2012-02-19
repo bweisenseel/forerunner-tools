@@ -29,7 +29,7 @@ def main(fname=None, outname=None):
     assert outname
     tcx = TCX(src=fname)
     time_position_sequence = ((parse_time(p), Position(*parse_position(p))) for p in tcx.position_points)
-    time_speed_sequence = [(p2[0], speed_miles(p1, p2)) for p1, p2 in pairwise(time_position_sequence) ]
+    time_speed_sequence = [(p2[0], speed_miles(p1, p2)) for p1, p2 in pairwise(time_position_sequence) if p1[0] != p2[0]]
 
     fig1 = plt.figure()
     ax_locs = fig1.add_subplot(111)
