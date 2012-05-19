@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 from matplotlib import pyplot as plt
 import matplotlib.dates as dates
