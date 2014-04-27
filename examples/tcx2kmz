@@ -1,0 +1,3 @@
+#!/bin/bash
+
+gpsbabel -i gtrnctr,sport=other -f ${1} -o kml -F ${2}
